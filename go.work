@@ -1,0 +1,11 @@
+go 1.24.4
+
+toolchain go1.24.11
+
+use (
+	./app/hrs
+	./pkg/cgi
+	./pkg/etl
+	./pkg/iam
+	./pkg/tag
+)
