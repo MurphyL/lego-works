@@ -1,4 +1,3 @@
-// internal/domain/tag.go
 package domain
 
 import (
@@ -56,21 +55,21 @@ type Tag struct {
     TagTypeRuleBased   TagType = 3 // 规则标签
     TagTypeAIGenerated TagType = 4 // AI生成标签
 */
-func (t *TagType) Label() string {
+func (t TagType) Label() string {
 	switch t {
 	default:
 		return ":"
 	}
 }
 
-func (c *TagCategory) Label() string {
+func (c TagCategory) Label() string {
 	switch c {
 	default:
 		return ":"
 	}
 }
 
-func (s *TagStatus) Label() string {
+func (s TagStatus) Label() string {
 	switch s {
 	default:
 		return ":"

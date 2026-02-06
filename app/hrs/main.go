@@ -1,7 +1,10 @@
 package main
 
-import "github.com/MurphyL/lego-works/pkg/cgi"
+import (
+	"github.com/MurphyL/lego-works/pkg/cgi"
+)
 
 func main() {
-	cgi.NewRestApp()
+	app := cgi.NewRestApp()
+	app.Serve(":3000")
 }

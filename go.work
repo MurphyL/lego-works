@@ -7,5 +7,6 @@ use (
 	./pkg/cgi
 	./pkg/etl
 	./pkg/iam
+	./pkg/logger
 	./pkg/tag
 )
