@@ -3,9 +3,10 @@ go 1.24.4
 toolchain go1.24.11
 
 use (
+	./app/core
 	./app/hrs
 	./pkg/cgi
-	./pkg/dao
+	./pkg/dal
 	./pkg/etl
 	./pkg/iam
 	./pkg/logger

@@ -2,10 +2,12 @@ package main
 
 import (
 	"log"
+	"os"
 	"testing"
 
-	"github.com/MurphyL/lego-works/pkg/dao"
 	"gorm.io/driver/mysql"
+
+	"github.com/MurphyL/lego-works/pkg/dal"
 )
 
 type Account struct {
@@ -18,12 +20,17 @@ type Account struct {
 }
 
 func (a *Account) TableName() string {
-	return "sys_user_account"
+	if hostname, _ := os.Hostname(); "lucky" == hostname {
+		return "sys_user_account"
+	} else {
+		return "sys_account"
+	}
 }
 
-func TestLucky(t *testing.T) {
-	conn := mysql.Open("yzm_hyqf_rw:VOWB@ypTw4ayzfqx2Vq@etmut2JFmNtg@tcp(192.168.33.233:3306)/test_yzm_hyqf?charset=utf8mb4&parseTime=True&loc=Local")
-	repo := dao.NewRepo(conn)
+func TestRepo(t *testing.T) {
+	dsn := os.Getenv("GO_DSN_MYSQL")
+	conn := mysql.Open(dsn)
+	repo := dal.NewRepo(conn)
 	acc := &Account{}
 	if err := repo.RetrieveOne(acc, 1); err == nil {
 		log.Println("用户查询完成：", acc)

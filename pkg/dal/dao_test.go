@@ -1,4 +1,4 @@
-package dao
+package dal
 
 import (
 	"log"
@@ -14,8 +14,8 @@ type DemoModel struct {
 	Args []any
 }
 
-func (r *TestRepo) ApplyRetrieveOne(dest any, h RetrieveOne[any]) error {
-	sql, args := h(dest)
+func (r *TestRepo) ApplyRetrieveOne(dest any, h RetrieveOne) error {
+	sql, args := h()
 	log.Println(sql, args)
 	return nil
 }
@@ -23,7 +23,7 @@ func (r *TestRepo) ApplyRetrieveOne(dest any, h RetrieveOne[any]) error {
 func TestRetrieveOne(t *testing.T) {
 	repo := TestRepo{}
 	dest := &DemoModel{}
-	repo.ApplyRetrieveOne(dest, func(query any) (string, []any) {
+	repo.ApplyRetrieveOne(dest, func() (string, []any) {
 		return "select * from sys_account where username = ?", []any{"luohao"}
 	})
 }
