@@ -5,6 +5,7 @@ toolchain go1.24.11
 use (
 	./app/hrs
 	./pkg/cgi
+	./pkg/dao
 	./pkg/etl
 	./pkg/iam
 	./pkg/tag
