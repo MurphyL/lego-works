@@ -1,22 +1,25 @@
 package dal
 
 import (
-	"os"
+	"strings"
 
 	"gorm.io/gorm"
 
+	"github.com/MurphyL/lego-works/pkg/dal/internal/rdbms"
 	"github.com/MurphyL/lego-works/pkg/lego"
 )
 
 var (
 	logger = lego.NewSugarSugar()
 	// 默认持久化数据源
-	defaultRepo *gorm.DB
+	defaultRepo *rdbms.GormRepo
 )
+
+type Repo = *rdbms.GormRepo
 
 type RepoOption func(*gorm.Config)
 
-func NewRepo(dial gorm.Dialector, withOpts ...RepoOption) *gorm.DB {
+func NewGorm(dial gorm.Dialector, withOpts ...RepoOption) Repo {
 	config := &gorm.Config{}
 	for _, withOpt := range withOpts {
 		withOpt(config)
@@ -25,43 +28,16 @@ func NewRepo(dial gorm.Dialector, withOpts ...RepoOption) *gorm.DB {
 	if err != nil {
 		logger.Panicln("连接数据库出错：", err.Error())
 	}
-	return db
+	return &rdbms.GormRepo{DB: db}
 }
 
-func InitDefaultRepo(makeDial func(dsn string) gorm.Dialector, withOpts ...RepoOption) {
-	dsn := os.Getenv("GO_DSN_MYSQL")
-	dial := makeDial(dsn)
-	defaultRepo = NewRepo(dial, withOpts...)
+func InitDefaultRepo(dsn string, openDatabase func(dsn string) gorm.Dialector, withOpts ...RepoOption) {
+	_, host, _ := strings.Cut(dsn, "@")
+	logger.Info("尝试连接主数据库：", host)
+	dial := openDatabase(dsn)
+	defaultRepo = NewGorm(dial, withOpts...)
 }
 
-func GetDefaultRepo() *gorm.DB {
+func GetDefaultRepo() Repo {
 	return defaultRepo
-}
-
-func GetRepo(key string) *gorm.DB {
-	return defaultRepo
-}
-
-func CreateOne(db *gorm.DB, dest interface{}) error {
-	return db.Create(dest).Error
-}
-
-func UpdateOne(db *gorm.DB, dest interface{}, args ...interface{}) error {
-	return db.Update("", dest).Error
-}
-
-func RetrieveOne(db *gorm.DB, dest interface{}, args ...interface{}) error {
-	return db.Take(dest, args...).Error
-}
-
-func RetrieveAll(db *gorm.DB, dest interface{}, args ...interface{}) error {
-	return db.Find(dest, args...).Error
-}
-
-func RetrieveWithPaging(db *gorm.DB, dest interface{}, args ...interface{}) error {
-	return db.Find(dest, args...).Error
-}
-
-func CreateOrUpdate(db *gorm.DB, dest interface{}) error {
-	return db.Create(dest).Error
 }

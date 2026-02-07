@@ -8,9 +8,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
-	"github.com/MurphyL/lego-works/pkg/cgi/internal/handlers"
+	"github.com/MurphyL/lego-works/pkg/cgi/handlers"
+	"github.com/MurphyL/lego-works/pkg/iam"
 	"github.com/MurphyL/lego-works/pkg/lego"
 )
 
@@ -18,9 +20,18 @@ var logger = lego.NewSugarSugar()
 
 func NewRestApp(ctx context.Context) *RestServer {
 	gin.SetMode(gin.ReleaseMode)
+	// 创建路由管理器
+	router := gin.New()
+	// CORS 设置
+	router.Use(cors.Default())
+	// 使用 Logger 中间件
+	router.Use(gin.Logger())
+	// 使用 Recovery 中间件
+	router.Use(gin.Recovery())
+	// 创建服务器
 	return &RestServer{
 		ctx:    ctx,
-		router: gin.New(),
+		router: router,
 	}
 }
 
@@ -29,11 +40,14 @@ type RestServer struct {
 	router *gin.Engine
 }
 
-func (a *RestServer) UseAuthHandlers(endpoint string, getHashPassword handlers.GetHashPassword) {
+// UseAuthHandlers 添加授权模块
+func (a *RestServer) UseAuthHandlers(endpoint string, idp iam.IdentityProvider) {
 	logger.Info("正在注册授权模块……")
 	r := a.router.Group(endpoint)
-	r.POST("/login", handlers.NewLoginHandler(getHashPassword))
+	r.POST("/login", handlers.NewLoginHandler(idp))
+	r.POST("/reset-password", handlers.NewResetPasswordHandler(idp))
 	r.GET("/logout", handlers.LogoutHandler)
+	r.GET("/captcha", handlers.CaptchaHandler)
 	a.router.Use(func(c *gin.Context) {
 		// 验证token
 		// 验证权限
@@ -41,17 +55,31 @@ func (a *RestServer) UseAuthHandlers(endpoint string, getHashPassword handlers.G
 	})
 }
 
+// RetrieveOne 获取单个对象
 func (a *RestServer) RetrieveOne(endpoint string, retriever func(string) (any, error)) {
-	a.router.GET(endpoint, func(c *gin.Context) {
+	a.router.GET(endpoint, handlers.AuthorizationHandler, func(c *gin.Context) {
 		refValue := c.Param(c.DefaultQuery("ref", "id"))
 		if dest, err := retriever(refValue); err == nil {
-			c.JSON(http.StatusOK, lego.NewResultViaPayload(dest))
+			c.JSON(http.StatusOK, lego.NewSuccessResult(dest))
 		} else {
 			c.JSON(http.StatusInternalServerError, lego.NewResultViaError(err))
 		}
 	})
 }
 
+// UpdateOne 修改单个对象
+func (a *RestServer) UpdateOne(endpoint string, handler func(string) (any, error)) {
+	a.router.PUT(endpoint, handlers.AuthorizationHandler, func(c *gin.Context) {
+		refValue := c.Param(c.DefaultQuery("ref", "id"))
+		if dest, err := handler(refValue); err == nil {
+			c.JSON(http.StatusOK, lego.NewSuccessResult(dest))
+		} else {
+			c.JSON(http.StatusInternalServerError, lego.NewResultViaError(err))
+		}
+	})
+}
+
+// Serve 启动携程并运行服务器
 func (a *RestServer) Serve(addr string) {
 	a.router.Use(gin.Recovery())
 	srv := &http.Server{

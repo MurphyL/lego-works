@@ -30,7 +30,7 @@ func (a *Account) TableName() string {
 func TestRepo(t *testing.T) {
 	dsn := os.Getenv("GO_DSN_MYSQL")
 	conn := mysql.Open(dsn)
-	repo := dal.NewRepo(conn)
+	repo := dal.NewGorm(conn)
 	acc := &Account{}
 	if err := repo.RetrieveOne(acc, 1); err == nil {
 		log.Println("用户查询完成：", acc)

@@ -1,26 +1,47 @@
 package iam
 
 import (
-	"sort"
-	"strings"
+	"context"
 
-	"golang.org/x/crypto/bcrypt"
-
-	"github.com/MurphyL/lego-works/pkg/iam/internal/login"
+	"github.com/MurphyL/lego-works/pkg/dal"
+	"github.com/MurphyL/lego-works/pkg/iam/internal/identify"
+	"github.com/MurphyL/lego-works/pkg/iam/internal/idp"
 )
 
-func GetHashParts(acc login.Account) []byte {
-	parts := []string{acc.GetLoginUsername(), acc.GetLoginPassword()}
-	sort.Strings(parts)
-	return []byte(strings.Join(parts, "-"))
+// 登录类型
+const (
+	LoginMethodPassword     identify.LoginMethod = "password"      // 密码登录
+	LoginMethodEmail        identify.LoginMethod = "email_code"    // 邮箱验证码登录
+	LoginMethodPhone        identify.LoginMethod = "phone_code"    // 手机验证码登录
+	LoginMethodWechatQrcode identify.LoginMethod = "wechat_qrcode" // 微信二维码登录
+	LoginMethodAlipayQrcode identify.LoginMethod = "alipay_qrcode" // 支付宝二维码登录
+)
+
+// 密码登录操作
+const (
+	PasswordActionTypeLogin    identify.PasswordActionType = "login"    // 登录
+	PasswordActionTypeReset    identify.PasswordActionType = "reset"    // 重置密码
+	PasswordActionTypeRegister identify.PasswordActionType = "register" // 注册
+)
+
+type IdentityProvider interface {
+	LoadAccountInfo(dest any, username string) error
 }
 
-func GetHashPassword(acc login.Account) string {
-	combined := GetHashParts(acc)
-	cipher, _ := bcrypt.GenerateFromPassword(combined, bcrypt.DefaultCost)
-	return string(cipher)
+func NewIdentityProvider(ctx context.Context, withOpts ...idp.AccountManagerOption) IdentityProvider {
+	return idp.NewAccountRepo(withOpts...)
 }
 
-func CompareHashPassword(hash string, acc login.Account) bool {
-	return bcrypt.CompareHashAndPassword([]byte(hash), GetHashParts(acc)) == nil
+func NewLoginArgs(action identify.PasswordActionType) *identify.PasswordLoginArgs {
+	return &identify.PasswordLoginArgs{Action: action}
+}
+
+func NewAccount() *identify.Account {
+	return new(identify.Account)
+}
+
+func WithDataAccessLayer(repo dal.Repo) idp.AccountManagerOption {
+	return func(manager *idp.AccountManager) {
+		manager.Repo = repo
+	}
 }
