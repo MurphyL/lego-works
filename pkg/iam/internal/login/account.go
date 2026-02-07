@@ -1,7 +1,9 @@
-package domain
+package login
 
 // LoginMethod - 登录方式
 type LoginMethod string
+
+type GetHashPassword func(string) (string, error)
 
 const (
 	LoginMethodPassword     LoginMethod = "password"   // 密码登录
@@ -11,7 +13,9 @@ const (
 	LoginMethodAlipayQrcode LoginMethod = "alipay_qrcode"
 )
 
-type Account struct {
+type Account interface {
+	GetLoginUsername() string
+	GetLoginPassword() string
 }
 
 func (m LoginMethod) Label() {
