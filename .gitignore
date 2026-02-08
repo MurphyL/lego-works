@@ -2,3 +2,4 @@
 
 *.log
 *.sum
+go.work.sum
