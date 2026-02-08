@@ -41,7 +41,7 @@ func NewAccount() *identify.Account {
 }
 
 func WithDataAccessLayer(repo dal.Repo) idp.AccountManagerOption {
-	return func(manager *idp.AccountManager) {
+	return func(manager *idp.AccountRepo) {
 		manager.Repo = repo
 	}
 }

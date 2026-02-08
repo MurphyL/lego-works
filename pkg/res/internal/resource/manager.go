@@ -1,3 +1,3 @@
-package domain
+package resource
 
 type ResourceManager struct{}

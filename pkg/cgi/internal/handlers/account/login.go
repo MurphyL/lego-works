@@ -1,4 +1,4 @@
-package handlers
+package account
 
 import (
 	"net/http"
@@ -22,6 +22,7 @@ const (
 var logger = lego.NewSugarSugar()
 
 func NewLoginHandler(idp iam.IdentityProvider) func(*gin.Context) {
+	logger.Info("正在注册用户登录处理器……")
 	return func(c *gin.Context) {
 		var loginArgs, existsAcc = iam.NewLoginArgs(iam.PasswordActionTypeLogin), iam.NewAccount()
 		if c.BindJSON(loginArgs); !loginArgs.ValidRequest() {

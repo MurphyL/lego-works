@@ -49,30 +49,46 @@ type Tag struct {
 	UpdatedAt   time.Time   `json:"updated_at"`
 }
 
-/*
-  - TagTypeSystem      TagType = 1 // 系统标签
-    TagTypeManual      TagType = 2 // 手动标签
-    TagTypeRuleBased   TagType = 3 // 规则标签
-    TagTypeAIGenerated TagType = 4 // AI生成标签
-*/
 func (t TagType) Label() string {
 	switch t {
+	case TagTypeSystem:
+		return "系统标签"
+	case TagTypeManual:
+		return "手动标签"
+	case TagTypeRuleBased:
+		return "规则标签"
+	case TagTypeAIGenerated:
+		return "AI生成标签"
 	default:
-		return ":"
+		return "非法标签"
 	}
 }
 
 func (c TagCategory) Label() string {
 	switch c {
+	case TagCategoryBehavior:
+		return "行为标签"
+	case TagCategoryAttribute:
+		return "属性标签"
+	case TagCategoryInterest:
+		return "兴趣标签"
+	case TagCategorySegment:
+		return "分群标签"
+	case TagCategoryCustom:
+		return "自定义标签"
 	default:
-		return ":"
+		return "未分组标签"
 	}
 }
 
 func (s TagStatus) Label() string {
 	switch s {
+	case TagStatusDisabled:
+		return "禁用"
+	case TagStatusEnabled:
+		return "启用"
 	default:
-		return ":"
+		return "临时状态"
 	}
 }
 

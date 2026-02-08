@@ -11,7 +11,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
-	"github.com/MurphyL/lego-works/pkg/cgi/handlers"
+	"github.com/MurphyL/lego-works/pkg/cgi/internal/handlers"
+	"github.com/MurphyL/lego-works/pkg/cgi/internal/handlers/account"
 	"github.com/MurphyL/lego-works/pkg/iam"
 	"github.com/MurphyL/lego-works/pkg/lego"
 )
@@ -44,9 +45,9 @@ type RestServer struct {
 func (a *RestServer) UseAuthHandlers(endpoint string, idp iam.IdentityProvider) {
 	logger.Info("正在注册授权模块……")
 	r := a.router.Group(endpoint)
-	r.POST("/login", handlers.NewLoginHandler(idp))
-	r.POST("/reset-password", handlers.NewResetPasswordHandler(idp))
-	r.GET("/logout", handlers.LogoutHandler)
+	r.POST("/login", account.NewLoginHandler(idp))
+	r.POST("/reset-password", account.NewResetPasswordHandler(idp))
+	r.GET("/logout", account.LogoutHandler)
 	r.GET("/captcha", handlers.CaptchaHandler)
 	a.router.Use(func(c *gin.Context) {
 		// 验证token
@@ -57,7 +58,7 @@ func (a *RestServer) UseAuthHandlers(endpoint string, idp iam.IdentityProvider) 
 
 // RetrieveOne 获取单个对象
 func (a *RestServer) RetrieveOne(endpoint string, retriever func(string) (any, error)) {
-	a.router.GET(endpoint, handlers.AuthorizationHandler, func(c *gin.Context) {
+	a.router.GET(endpoint, account.AuthorizationHandler, func(c *gin.Context) {
 		refValue := c.Param(c.DefaultQuery("ref", "id"))
 		if dest, err := retriever(refValue); err == nil {
 			c.JSON(http.StatusOK, lego.NewSuccessResult(dest))
@@ -69,7 +70,7 @@ func (a *RestServer) RetrieveOne(endpoint string, retriever func(string) (any, e
 
 // UpdateOne 修改单个对象
 func (a *RestServer) UpdateOne(endpoint string, handler func(string) (any, error)) {
-	a.router.PUT(endpoint, handlers.AuthorizationHandler, func(c *gin.Context) {
+	a.router.PUT(endpoint, account.AuthorizationHandler, func(c *gin.Context) {
 		refValue := c.Param(c.DefaultQuery("ref", "id"))
 		if dest, err := handler(refValue); err == nil {
 			c.JSON(http.StatusOK, lego.NewSuccessResult(dest))
