@@ -2,6 +2,8 @@ package lego
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
 	"go.uber.org/zap"
 
@@ -11,18 +13,20 @@ import (
 
 var zapLogger *zap.Logger
 
-type CaptchaArgs rest.CaptchaArgs
-
 func init() {
 	zapLogger = logger.NewZapLogger()
 }
 
-func NewSugarSugar() *zap.SugaredLogger {
-	return zapLogger.Sugar()
+func LookupDefaultDatasourceName() (string, bool) {
+	return os.LookupEnv("GO_DSN_MYSQL")
 }
 
-func NewCaptchaArgs(key, code string) *rest.CaptchaArgs {
-	return &rest.CaptchaArgs{CaptchaKey: key, CaptchaCode: code}
+func NewDomainRef(subdomain ...string) string {
+	return strings.Join(subdomain, "#")
+}
+
+func NewSugarSugar() *zap.SugaredLogger {
+	return zapLogger.Sugar()
 }
 
 func NewResult(ok bool, payload any, message string) *rest.Result {

@@ -17,8 +17,13 @@ var logger = lego.NewSugarSugar()
 
 func main() {
 	ctx := context.Background()
-	dsn := os.Getenv("GO_DSN_MYSQL")
-	dal.InitDefaultRepo(dsn, mysql.Open)
+	dsn, dsnDefined := lego.LookupDefaultDatasourceName()
+	if !dsnDefined {
+		logger.Panicln("未找到数据源配置")
+		os.Exit(1)
+	}
+	repo := dal.NewGormRepo(dsn, mysql.Open)
+	dal.SetDefaultRepo(repo)
 	idp := iam.NewIdentityProvider(ctx)
 	app := cgi.NewRestApp(ctx)
 	app.UseAuthHandlers("/api/v1/auth", idp)

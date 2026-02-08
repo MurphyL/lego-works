@@ -4,6 +4,7 @@ import "gorm.io/gorm"
 
 type GormRepo struct {
 	*gorm.DB
+	Key string
 }
 
 func (r *GormRepo) CreateOne(dest interface{}) error {

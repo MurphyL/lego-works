@@ -22,15 +22,14 @@ type Account struct {
 func (a *Account) TableName() string {
 	if hostname, _ := os.Hostname(); "lucky" == hostname {
 		return "sys_user_account"
-	} else {
-		return "sys_account"
 	}
+	return "sys_account"
 }
 
 func TestRepo(t *testing.T) {
 	dsn := os.Getenv("GO_DSN_MYSQL")
 	conn := mysql.Open(dsn)
-	repo := dal.NewGorm(conn)
+	repo := dal.NewGormRepo(conn)
 	acc := &Account{}
 	if err := repo.RetrieveOne(acc, 1); err == nil {
 		log.Println("用户查询完成：", acc)

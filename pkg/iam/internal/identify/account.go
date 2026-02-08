@@ -1,7 +1,7 @@
 package identify
 
 type Account struct {
-	ID       uint   `gorm:"primarykey" json:"id"`
+	ID       uint   `gorm:"primaryKey" json:"id"`
 	PersonID uint   `gorm:"uniqueIndex" json:"personId"`
 	Username string `gorm:"uniqueIndex" json:"username"`
 	Password string `json:"-"`
